@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型训练阶段和范式知识地图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #3a8bfe;
+            transform: translateY(-2px);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-header {
+            padding: 20px 25px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .section-header h2 {
+            font-size: 1.5em;
+            color: #2c3e50;
+        }
+
+        .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .section.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 0 25px 25px;
+            display: block;
+        }
+
+        .section.collapsed .section-content {
+            display: none;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .card.expanded {
+            background: #e8f5e8;
+            border-left-color: #28a745;
+        }
+
+        .card.expanded .card-details {
+            display: block;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .card-details {
+            display: none;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .stage-flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stage-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .arrow {
+            font-size: 1.5em;
+            color: #666;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .comparison-table th {
+            background: #4facfe;
+            color: white;
+            font-weight: bold;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .thinking-questions {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .thinking-questions h3 {
+            color: #d63384;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .thinking-questions ol {
+            padding-left: 20px;
+        }
+
+        .thinking-questions li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #6f42c1;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .nav-buttons {
+                justify-content: center;
+            }
+            
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stage-flow {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        .section-header.pretrain { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        .section-header.sft { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        .section-header.reward { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); }
+        .section-header.ppo { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .section-header.rlhf { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .section-header.llama { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .section-header.comparison { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 大模型训练阶段和范式知识地图</h1>
+            <p>深入理解从预训练到RLHF的完整训练流程</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 搜索知识点...">
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="scrollToSection('pretrain')">预训练</button>
+                <button class="nav-btn" onclick="scrollToSection('sft')">SFT</button>
+                <button class="nav-btn" onclick="scrollToSection('reward')">奖励模型</button>
+                <button class="nav-btn" onclick="scrollToSection('ppo')">PPO</button>
+                <button class="nav-btn" onclick="scrollToSection('rlhf')">RLHF</button>
+                <button class="nav-btn" onclick="scrollToSection('llama')">LLaMA</button>
+                <button class="nav-btn" onclick="scrollToSection('comparison')">对比</button>
+                <button class="nav-btn" onclick="toggleAllSections()">全部展开/收起</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 预训练阶段 -->
+            <div class="section" id="pretrain">
+                <div class="section-header pretrain" onclick="toggleSection('pretrain')">
+                    <h2>🎯 一、Pretrain（预训练-自监督阶段）</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>基本概念</h3>
+                            <p>大语言模型训练的第一阶段，最大的训练数据集和最耗时的步骤</p>
+                            <div class="card-details">
+                                <p><strong>核心特点：</strong></p>
+                                <ul>
+                                    <li>不停地阅读大量人类文字资料（网页、书籍、代码等）</li>
+                                    <li>亦步亦趋地学习人类如何使用文字</li>
+                                    <li>学习人类知识和多样的文字表达方式</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>数据量与算力需求</h3>
+                            <p>需要海量数据和巨大算力投入</p>
+                            <div class="card-details">
+                                <p><strong>数据规模：</strong></p>
+                                <ul>
+                                    <li>GPT-3: 约45TB文本数据，约3000亿个token</li>
+                                    <li>GPT-4: 估计使用了超过1万亿个token</li>
+                                </ul>
+                                <p><strong>算力成本：</strong></p>
+                                <ul>
+                                    <li>GPT-3: 训练成本约1200万美元</li>
+                                    <li>GPT-4: 估计训练成本超过1亿美元</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>自监督学习原理</h3>
+                            <p>从未标记数据中自动生成监督信号，无需人工标注</p>
+                            <div class="card-details">
+                                <p><strong>训练机制：</strong></p>
+                                <ul>
+                                    <li><strong>掩码预测：</strong>随机遮盖文本中的某些词，让模型预测被遮盖的内容</li>
+                                    <li><strong>下一词预测：</strong>给定前面的词，预测下一个词应该是什么</li>
+                                    <li><strong>段落联合概率：</strong>让模型能一字不落地生成整个段落的概率分布</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>预训练的局限性</h3>
+                            <p>只是在"接话茬"，不理解如何执行特定任务</p>
+                            <div class="card-details">
+                                <p>预训练模型虽然掌握了语言知识，但它只是在"接话茬"，并不理解如何执行特定任务或遵循人类指令，这就是为什么需要后续的微调阶段。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SFT阶段 -->
+            <div class="section" id="sft">
+                <div class="section-header sft" onclick="toggleSection('sft')">
+                    <h2>🎓 二、SFT (Supervised Fine-Tuning)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>基本概念</h3>
+                            <p>在预训练模型基础上进行的有监督学习阶段</p>
+                            <div class="card-details">
+                                <p><strong>目的：</strong>教会模型理解和执行特定任务</p>
+                                <p><strong>组合效果：</strong>Pretrain+SFT = 半监督学习（不缺数据，但缺标签）</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>解决的核心问题</h3>
+                            <p>解决预训练模型只会"接话茬"而不会"做任务"的问题</p>
+                            <div class="card-details">
+                                <p><strong>通过指令微调教会模型执行：</strong></p>
+                                <ul>
+                                    <li>对话任务</li>
+                                    <li>分类任务</li>
+                                    <li>判断任务</li>
+                                    <li>推理任务</li>
+                                    <li>代码生成任务</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>SFT数据特点</h3>
+                            <p>数据量相对较小，但质量要求很高</p>
+                            <div class="card-details">
+                                <ul>
+                                    <li>通常只有几十万条高质量的指令-回答对</li>
+                                    <li>大约是预训练阶段数据量的1/5000</li>
+                                    <li>数据质量比数据量更重要</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>实现方式</h3>
+                            <p>通过多种微调技术提升模型能力</p>
+                            <div class="card-details">
+                                <ul>
+                                    <li><strong>指令微调：</strong>使用"指令-回答"对数据，教模型理解并执行指令</li>
+                                    <li><strong>人类偏好对齐：</strong>让模型生成符合人类期望的回答</li>
+                                    <li><strong>特定任务微调：</strong>针对特定领域或任务进行专门训练</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 奖励模型 -->
+            <div class="section" id="reward">
+                <div class="section-header reward" onclick="toggleSection('reward')">
+                    <h2>🏆 三、Reward Model（奖励模型）</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>基本概念</h3>
+                            <p>RLHF过程中的关键组件，用于评估模型生成内容的质量</p>
+                            <div class="card-details">
+                                <p>在这个阶段，开始使用LLM生成的数据进行训练，每条数据需要逐一评估。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>训练过程</h3>
+                            <p>通过人工标注训练奖励模型</p>
+                            <div class="card-details">
+                                <ol>
+                                    <li>准备一系列Prompt，让模型给每个Prompt生成多个Response</li>
+                                    <li>设计标注方法：打分、评级或排序（排序通常更有效）</li>
+                                    <li>招募标注人员进行人工评估</li>
+                                    <li>使用标注数据训练Reward Model</li>
+                                    <li>训练目标：使Reward Model能够为任意Prompt-Response对给出符合人类偏好的评分</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>工作流程</h3>
+                            <p>三步走策略</p>
+                            <div class="card-details">
+                                <ol>
+                                    <li><strong>收集示范数据</strong>，训练有监督策略</li>
+                                    <li><strong>收集比较数据</strong>，训练奖励模型</li>
+                                    <li><strong>使用强化学习</strong>，根据奖励模型优化策略</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>作用与价值</h3>
+                            <p>为强化学习提供关键反馈信号</p>
+                            <div class="card-details">
+                                <ul>
+                                    <li>为强化学习提供反馈信号</li>
+                                    <li>替代人类不断进行评估的过程</li>
+                                    <li>引导模型生成更符合人类偏好的回答</li>
+                                    <li>帮助模型理解什么样的回答是"好的"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PPO算法 -->
+            <div class="section" id="ppo">
+                <div class="section-header ppo" onclick="toggleSection('ppo')">
+                    <h2>⚡ 四、PPO (Proximal Policy Optimization)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>基本概念</h3>
+                            <p>一种强化学习算法，用于在有奖励信号的情况下优化模型的策略</p>
+                            <div class="card-details">
+                                <p>在大语言模型训练中，它是RLHF的核心算法。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>核心思想</h3>
+                            <p>小步快跑，不要冒进</p>
+                            <div class="card-details">
+                                <p><strong>类比：</strong>教机器人玩接球游戏</p>
+                                <ul>
+                                    <li><strong>小步快跑：</strong>机器人尝试新的动作组合（在旧策略上小幅改动）</li>
+                                    <li><strong>获得奖励：</strong>如果效果好（接到球），则更新策略</li>
+                                    <li><strong>关键点：</strong>PPO确保策略更新不会太大，避免因一次成功而彻底改变所有行为</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>避免"学跑了就忘了怎么走"</h3>
+                            <p>通过裁剪机制限制新旧策略间的差异</p>
+                            <div class="card-details">
+                                <p>PPO通过"裁剪（clipping）"机制限制新旧策略间的差异，鼓励模型在现有良好策略基础上微调，而非进行剧烈改变。</p>
+                                <p><strong>比喻：</strong>小心翼翼地调整精密仪器的旋钮，希望调整后效果更好，但一次拧太多可能会失准。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>技术细节</h3>
+                            <p>PPO的核心技术组件</p>
+                            <div class="card-details">
+                                <ul>
+                                    <li><strong>目标函数：</strong>PPO使用裁剪的目标函数，限制策略更新的幅度</li>
+                                    <li><strong>优势估计：</strong>使用优势函数评估动作的好坏，指导策略更新</li>
+                                    <li><strong>多轮迭代：</strong>通过多轮迭代逐步优化策略，每轮使用小批量数据</li>
+                                    <li><strong>熵正则化：</strong>鼓励策略保持适当的探索性，避免过早收敛到次优解</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RLHF完整流程 -->
+            <div class="section" id="rlhf">
+                <div class="section-header rlhf" onclick="toggleSection('rlhf')">
+                    <h2>🔄 五、RLHF完整流程</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>什么是RLHF</h3>
+                            <p>将人类反馈整合到强化学习过程中的方法</p>
+                            <div class="card-details">
+                                <p>RLHF (Reinforcement Learning from Human Feedback) 目的是使AI系统的行为更符合人类偏好。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>完整流程</h3>
+                            <p>五步完整训练流程</p>
+                            <div class="card-details">
+                                <ol>
+                                    <li><strong>预训练模型：</strong>使用自监督学习在大规模文本语料上训练基础模型</li>
+                                    <li><strong>SFT微调：</strong>使用人工编写的指令-回答对进行监督微调</li>
+                                    <li><strong>收集人类偏好数据：</strong>对于同一提示，生成多个不同回答，人类评估者对这些回答进行排序</li>
+                                    <li><strong>训练奖励模型：</strong>使用人类偏好数据训练奖励模型，学习预测哪些回答更符合人类偏好</li>
+                                    <li><strong>使用PPO进行强化学习：</strong>使用奖励模型作为反馈信号，通过PPO算法优化语言模型</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>RLHF的优势</h3>
+                            <p>全面提升模型输出质量</p>
+                            <div class="card-details">
+                                <ul>
+                                    <li>使模型输出更符合人类价值观和偏好</li>
+                                    <li>减少有害、不实或无用的回答</li>
+                                    <li>提高模型回答的有用性、真实性和安全性</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-flow">
+                        <div class="stage-box">预训练</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">SFT</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">奖励模型</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">PPO</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LLaMA训练阶段 -->
+            <div class="section" id="llama">
+                <div class="section-header llama" onclick="toggleSection('llama')">
+                    <h2>🦙 六、LLaMA的训练阶段</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="cards-grid">
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>Rejection Sampling（拒绝采样）</h3>
+                            <p>LLaMA训练中的特色环节：生成候选，然后根据标准筛选</p>
+                            <div class="card-details">
+                                <p><strong>工作流程示例（写诗）：</strong></p>
+                                <ol>
+                                    <li><strong>提议阶段：</strong>LLM生成候选句子，如"黑夜如此漫长。"</li>
+                                    <li><strong>检查与筛选：</strong>检查负面词汇、押韵等要求</li>
+                                    <li><strong>决定与重试：</strong>被拒绝则生成新候选，被接受则保留</li>
+                                </ol>
+                                <p><strong>应用场景：</strong>内容过滤、质量保证、可控文本生成、训练数据清洗</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card" onclick="toggleCard(this)">
+                            <h3>DPO (Direct Preference Optimization)</h3>
+                            <p>LLaMA的另一个特色：简化RLHF流程</p>
+                            <div class="card-details">
+                                <p><strong>与传统RLHF的对比：</strong></p>
+                                <ul>
+                                    <li><strong>传统RLHF：</strong>先训练奖励模型判断好坏，再用强化学习优化语言模型</li>
+                                    <li><strong>DPO方法：</strong>直接告诉模型"这个回答比那个好"，跳过奖励模型和强化学习步骤</li>
+                                </ul>
+                                <p><strong>优势：</strong>简化训练流程，减少计算资源需求，避免强化学习中的不稳定性问题</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stage-flow">
+                        <div class="stage-box">预训练</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">奖励模型</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">拒绝采样</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">SFT</div>
+                        <div class="arrow">→</div>
+                        <div class="stage-box">DPO</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 训练阶段对比 -->
+            <div class="section" id="comparison">
+                <div class="section-header comparison" onclick="toggleSection('comparison')">
+                    <h2>📊 七、训练阶段对比</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>对比维度</th>
+                                <th>GPT系列</th>
+                                <th>LLaMA系列</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>训练流程</strong></td>
+                                <td>Pretrain → SFT → Reward Model → PPO (RLHF)</td>
+                                <td>Pretrain → Reward Model → Rejection Sampling → SFT → DPO</td>
+                            </tr>
+                            <tr>
+                                <td><strong>强化学习方法</strong></td>
+                                <td>使用PPO进行强化学习</td>
+                                <td>后期采用DPO直接从偏好优化</td>
+                            </tr>
+                            <tr>
+                                <td><strong>候选筛选机制</strong></td>
+                                <td>主要依靠奖励模型和强化学习</td>
+                                <td>使用Rejection Sampling进行候选筛选</td>
+                            </tr>
+                            <tr>
+                                <td><strong>训练效率</strong></td>
+                                <td>完整RLHF流程，计算成本较高</td>
+                                <td>DPO通常比完整RLHF流程更高效</td>
+                            </tr>
+                            <tr>
+                                <td><strong>样本质量控制</strong></td>
+                                <td>通过奖励模型间接控制</td>
+                                <td>Rejection Sampling可以在训练早期提高样本质量</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 思考问题 -->
+            <div class="thinking-questions">
+                <h3>🤔 深度思考问题</h3>
+                <ol>
+                    <li><strong>多阶段训练的必要性：</strong>为什么大语言模型需要经历从预训练到RLHF的多阶段训练，而不能直接通过一个端到端的过程学习？</li>
+                    <li><strong>有用性与真实性的平衡：</strong>如何平衡模型在RLHF过程中的"有用性"和"真实性"？有时这两个目标可能相互冲突。</li>
+                    <li><strong>未来训练方法演变：</strong>随着模型规模不断增大，训练成本飙升，未来大语言模型的训练方法可能会如何演变以提高效率？</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            const sections = document.querySelectorAll('.section');
+            
+            // 清除之前的高亮
+            document.querySelectorAll('.highlight').forEach(el => {
+                el.outerHTML = el.innerHTML;
+            });
+            
+            if (searchTerm === '') {
+                cards.forEach(card => {
+                    card.style.display = 'block';
+                });
+                sections.forEach(section => {
+                    section.style.display = 'block';
+                });
+                return;
+            }
+            
+            let hasResults = false;
+            
+            sections.forEach(section => {
+                let sectionHasResults = false;
+                const sectionCards = section.querySelectorAll('.card');
+                
+                sectionCards.forEach(card => {
+                    const text = card.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        card.style.display = 'block';
+                        sectionHasResults = true;
+                        hasResults = true;
+                        
+                        // 高亮搜索词
+                        highlightText(card, searchTerm);
+                        
+                        // 展开卡片显示详情
+                        if (!card.classList.contains('expanded')) {
+                            toggleCard(card);
+                        }
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                section.style.display = sectionHasResults ? 'block' : 'none';
+                
+                // 如果section有结果，自动展开
+                if (sectionHasResults && section.classList.contains('collapsed')) {
+                    toggleSection(section.id);
+                }
+            });
+        });
+        
+        function highlightText(element, searchTerm) {
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            const textNodes = [];
+            let node;
+            while (node = walker.nextNode()) {
+                textNodes.push(node);
+            }
+            
+            textNodes.forEach(textNode => {
+                const text = textNode.textContent;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                if (regex.test(text)) {
+                    const highlightedText = text.replace(regex, '<span class="highlight">$1</span>');
+                    const span = document.createElement('span');
+                    span.innerHTML = highlightedText;
+                    textNode.parentNode.replaceChild(span, textNode);
+                }
+            });
+        }
+        
+        // 切换section展开/收起
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('collapsed');
+        }
+        
+        // 切换卡片展开/收起
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }
+        
+        // 滚动到指定section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth' });
+            
+            // 如果section是收起状态，则展开它
+            if (section.classList.contains('collapsed')) {
+                toggleSection(sectionId);
+            }
+        }
+        
+        // 全部展开/收起
+        let allExpanded = false;
+        function toggleAllSections() {
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach(section => {
+                if (allExpanded) {
+                    section.classList.add('collapsed');
+                } else {
+                    section.classList.remove('collapsed');
+                }
+            });
+            
+            allExpanded = !allExpanded;
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 可以在这里添加一些初始化逻辑
+            console.log('大模型训练阶段和范式知识地图已加载完成！');
+        });
+    </script>
+</body>
+</html>
